@@ -70,7 +70,7 @@ class SudokuSolver:
         outputSudokuTensor = self.model(sudokuTensor)
         solutionTensor = torch.argmax(outputSudokuTensor,2)
         solutionTensor += 1  
-        #self.plotter.plotMatrix(solutionTensor)
+        self.plotter.plotMatrix(solutionTensor)
         return solutionTensor
 
     def __solveSudokuStepByStep(self, sudoku):
@@ -109,16 +109,21 @@ class SudokuSolver:
         else:
             print('{} Sudoku Is UnCorrect\n'.format(speed))
 
-    def solveSudoku(self, sudoku, fast=True):
+    def solveSudoku(self, sudoku, fast=False):
         solvedSudokuTensor = self.__getSudokuSolution(sudoku, fast)
         self.__evaluateSudoku(solvedSudokuTensor, fast)
          
+
+def readSudokuFromTest(sudokuPath):
+    sudokuAsList = list()
+    with open(sudokuPath) as inputFile:
+        for line in inputFile:
+            sudokuAsList.append(''.join(line.strip().split()))
+    return sudokuAsList
+
 if __name__ == '__main__':
 
-    #sudoku = ['000402063', '005810097', '431006500', '010904000', '847000006', '500180002', '089571000', '063000000', '000000279']
-    sudoku = ['800370200', '305840760', '970065043', '436092507', '008607400', '057403016', '680034105', '700520690', '042906008']
-    #864371259 325849761 971265843 436192587 198657432 257483916 689734125 713528694 542916378
-
     sudokuSolver = SudokuSolver(sys.argv[1])
-    sudokuSolver.solveSudoku(sudoku,fast=False)
+    sudoku = readSudokuFromTest(sys.argv[2])
+    sudokuSolver.solveSudoku(sudoku)
     
