@@ -9,7 +9,7 @@ If you are looking for an accurate and fast method to solve sudokus you are not 
 This repository is more focused on testing and tryng to understand what is able to learn a DNN from a
 dataset in a supervised way. 
 
-# Requirements.
+# Requirements
 
 I've been developing these scripts with python 3.6 and pytorch. You can find the dependencies in the
 requirements.txt file. I recommend to just use:
@@ -18,16 +18,16 @@ requirements.txt file. I recommend to just use:
 pip install -r requirements.txt
 ```
 
-#Dataset
+# Dataset
 
 If you want to try to train some models so as to reproduce the results you need a dataset with tuples
 of unsolved/solved sudokus. Here we have used the [1 million Sudoku games](https://www.kaggle.com/bryanpark/sudoku) corpus from Kaggle. The code
 is adapted to use their sudoku.csv file. You can download it from the following [link](https://www.kaggle.com/bryanpark/sudoku).
 
-#Trainning
+# Trainning
 
 Under Construction
 
-#Inference 
+# Inference 
 
 Under Construction
