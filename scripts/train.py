@@ -30,7 +30,7 @@ class Trainner:
 
         print('Preparing Models')
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        self.model = SudokuSolver(numberOfKernels = self.parameters.numberOfKernels)
+        self.model = SudokuNet(numberOfKernels = self.parameters.numberOfKernels)
         self.model.to(self.device)
 
     def __prepareOutputDirectories(self):

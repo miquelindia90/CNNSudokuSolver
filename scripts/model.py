@@ -3,9 +3,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-class SudokuSolver(nn.Module):
+class SudokuNet(nn.Module):
     def __init__(self, numberOfKernels=32):
-        super(SudokuSolver, self).__init__()
+        super(SudokuNet, self).__init__()
         self.featureSize = numberOfKernels*9*4
         self.cellsConv = torch.nn.Conv2d(1, numberOfKernels, 3, stride=3)      
         self.rowsConv = torch.nn.Conv2d(1, numberOfKernels, [1,9])      
