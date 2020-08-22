@@ -159,7 +159,7 @@ if __name__ == '__main__':
     parser.add_argument('--dataSamples', type=int, default=1000000, help='Number Of Samples Used from the CSV') 
     parser.add_argument('--dropSamplingStrategy', action='store_true')
 
-    parser.add_argument('--numberOfKernels', type=float, default=32)
+    parser.add_argument('--numberOfKernels', type=float, default=128)
     parser.add_argument('--printEvery', type=int, default=1000, help='Trainning Logging Frequency in # of batches') 
     parameters = parser.parse_args() 
     trainner = Trainner(parameters)
