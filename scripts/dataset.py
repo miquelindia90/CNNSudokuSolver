@@ -28,12 +28,12 @@ def prepareSudokuTensors(dataFrame, train_split=0.8):
 
 class Dataset(data.Dataset):
 
-    def __init__(self, sudokusQuizzes, sudokusSolutions, sampling=False):
+    def __init__(self, sudokusQuizzes, sudokusSolutions, dropSampling=False):
         'Initialization'
         self.sudokusQuizzes = sudokusQuizzes
         self.sudokusSolutions = sudokusSolutions
         self.num_samples = len(sudokusQuizzes)
-        self.sampling = sampling
+        self.dropSampling = dropSampling
 
     def __len__(self):
         return self.num_samples
@@ -50,12 +50,12 @@ class Dataset(data.Dataset):
 
     def __getitem__(self, index):
         'Generates one sample of data'
-        inputSudoku = self.__getInput(index) if self.sampling else self.sudokusQuizzes[index,:]
+        inputSudoku = self.__getInput(index) if self.dropSampling else self.sudokusQuizzes[index,:]
         outputSudoku = self.sudokusSolutions[index,:]
         return inputSudoku, outputSudoku
 
-def loadDataset(dataSet, subsample=1000000):
+def loadDataset(dataSet, subsample=1000000, dropSampling=False):
     dataset = pd.read_csv(dataSet, sep=',')
     dataSubset = dataset.sample(subsample)
     trainInputs, trainSolutions, testInputs, testSolutions = prepareSudokuTensors(dataSubset)
-    return Dataset(trainInputs, trainSolutions, sampling=True), Dataset(testInputs, testSolutions)
+    return Dataset(trainInputs, trainSolutions, dropSampling=dropSampling), Dataset(testInputs, testSolutions)
