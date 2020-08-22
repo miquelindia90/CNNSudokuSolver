@@ -120,7 +120,7 @@ class Trainner:
             for batchIndex, batch in enumerate(self.validDataLoader):
                 unsolvedSudokus, _ = self.__getIOTensorFromBatch(batch)
                 solvedSudokus = self.model(unsolvedSudokus)
-                mask = torch.where(unsolvedSudokus.view(-1)>0)
+                mask = torch.where(unsolvedSudokus.view(-1)==0)
                 validationAccuracy += self.__checkBatchAccuracy(solvedSudokus.view(-1,9)[mask], batch[1].view(-1)[mask])
 
         self.__writeLastBatch(unsolvedSudokus, solvedSudokus, batch[1].squeeze())
@@ -140,7 +140,7 @@ class Trainner:
                 self.optimizer.zero_grad()
                 tensorInput, tensorOutput = self.__prepareIOTrainTensors(batch)
                 pred = self.model(tensorInput)
-                mask = torch.where(tensorInput.view(-1)>0)
+                mask = torch.where(tensorInput.view(-1)==0)
                 loss = self.criterion(pred.view(-1,9)[mask], tensorOutput[mask])
                 loss.backward()
                 self.optimizer.step()
@@ -155,7 +155,7 @@ if __name__ == '__main__':
     parser.add_argument('--batchSize', type=int, default=128) 
     parser.add_argument('--maxEpochs', type=int, default=10000) 
     parser.add_argument('--CSVDataPath', type=str, default='sudoku.csv')
-    parser.add_argument('--outputSamplesDirectory', type=str, default='./out1')
+    parser.add_argument('--outputSamplesDirectory', type=str, default='./out2')
     parser.add_argument('--dataSamples', type=int, default=1000000, help='Number Of Samples Used from the CSV') 
     parser.add_argument('--dropSamplingStrategy', action='store_true')
 
