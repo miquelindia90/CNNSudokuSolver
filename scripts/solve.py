@@ -4,102 +4,121 @@ import copy
 import torch
 import itertools
 
-def sudoku_ok(line):
-    return (len(line) == 9 and sum(line) == sum(set(line)))
 
-def checkSudoku(grid):
+class SudokuChecker:
+    def __init__(self):
+        pass
+   
+    @staticmethod 
+    def __checkSudokuConstraint(line):
+        return (len(line) == 9 and sum(line) == sum(set(line)))
 
-    bad_rows = [row for row in grid if not sudoku_ok(row)]
-    grid = list(zip(*grid))
-    bad_cols = [col for col in grid if not sudoku_ok(col)]
-    squares = []
-    for i in range(0, 9, 3):
-        for j in range(0, 9, 3):
-            square = list(itertools.chain(row[j:j+3] for row in grid[i:i+3]))
-            squareNumbers = list()
-            for column in square:
-                for elem in column:
-                    squareNumbers.append(elem)
-            squares.append(squareNumbers)
+    def checkSudoku(self, grid):
 
-    bad_squares = [square for square in squares if not sudoku_ok(square)]
-    return not (bad_rows or bad_cols or bad_squares)
+        bad_rows = [row for row in grid if not self.__checkSudokuConstraint(row)]
+        grid = list(zip(*grid))
+        bad_cols = [col for col in grid if not (col)]
+        squares = []
+        for i in range(0, 9, 3):
+            for j in range(0, 9, 3):
+                square = list(itertools.chain(row[j:j+3] for row in grid[i:i+3]))
+                squareNumbers = list()
+                for column in square:
+                    for elem in column:
+                        squareNumbers.append(elem)
+                squares.append(squareNumbers)
 
-def checkIfSudokuIsCorrect(sudokuTensor):
+        bad_squares = [square for square in squares if not self.__checkSudokuConstraint(square)]
+        return not (bad_rows or bad_cols or bad_squares)
 
-    sudokuMatrix = copy.copy(sudokuTensor).view(9,9).tolist()
-    return checkSudoku(sudokuMatrix)
-
-def toStr(intList):
-
-    strList = [str(element) for element in intList]
-    return strList
-
-def plotMatrix(sudokuTensor):
-    sudokuMatrix = copy.copy(sudokuTensor).view(9,9).tolist()
-    for row in sudokuMatrix:
-        print('{}'.format(' '.join(toStr(row))))
-    print('')
-
-def prepareTensor(sudoku):
-    tensor = torch.zeros((1,81))
-    for rowIndex, row in enumerate(sudoku):
-        for columnIndex, value in enumerate(row):
-            tensor[0, rowIndex*9 + columnIndex] = int(value)
-
-    return tensor.long()
-
-def solveSudokuStepByStep(model, sudokuTensor):
-
-    step=1
-    while torch.sum(sudokuTensor==0)>0:
-        outputSudokuTensor = model(sudokuTensor)
-        decisionProbabilities, solutionTensor = torch.max(outputSudokuTensor,2) 
-        _, mask = torch.where(sudokuTensor>0)
-        decisionProbabilities[0,mask] = float('-inf')
-        mostLikelyCell = torch.argmax(decisionProbabilities)
-        sudokuTensor[0,mostLikelyCell] = solutionTensor[0,mostLikelyCell]+1
-        print('Step: {}'.format(step))
-        print('Filled Row {}, Column {}'.format(mostLikelyCell//9+1,mostLikelyCell%9+1))
-        plotMatrix(sudokuTensor)
-        step+=1
+class SudokuPlotter:
+    def __init__(self):
+        pass
     
-    return sudokuTensor
+    @staticmethod    
+    def __toStr(intList):
+    
+        strList = [str(element) for element in intList]
+        return strList
+    
+    def plotMatrix(self, sudokuTensor):
+        sudokuMatrix = copy.copy(sudokuTensor).view(9,9).tolist()
+        for row in sudokuMatrix:
+            print('{}'.format(' '.join(self.__toStr(row))))
+        print('')
 
-def solveSudokuFast(model, sudokuTensor):
+class SudokuSolver:
+    def __init__(self, modelPath):
+        self.sudokuChecker = SudokuChecker()
+        self.plotter = SudokuPlotter()
+        self.__loadModel(modelPath)
 
-    outputSudokuTensor = model(sudokuTensor)
-    solutionTensor = torch.argmax(outputSudokuTensor,2)
-    solutionTensor += 1  
-    plotMatrix(solutionTensor)
-    return solutionTensor 
+    def __loadModel(self, modelPath):
+        self.model = torch.load(modelPath, map_location=torch.device('cpu'))
+        self.model.eval()
 
+    @staticmethod
+    def __prepareSudokuTensor(sudoku):
+        sudokuTensor = torch.zeros((1,81))
+        for rowIndex, row in enumerate(sudoku):
+            for columnIndex, value in enumerate(row):
+                sudokuTensor[0, rowIndex*9 + columnIndex] = int(value)
+        return sudokuTensor.long()
+
+    def __solveSudokuInOneStep(self, sudoku):
+        sudokuTensor = self.__prepareSudokuTensor(sudoku)
+        outputSudokuTensor = self.model(sudokuTensor)
+        solutionTensor = torch.argmax(outputSudokuTensor,2)
+        solutionTensor += 1  
+        #self.plotter.plotMatrix(solutionTensor)
+        return solutionTensor
+
+    def __solveSudokuStepByStep(self, sudoku):
+        sudokuTensor = self.__prepareSudokuTensor(sudoku)
+        step=1
+        while torch.sum(sudokuTensor==0)>0:
+            outputSudokuTensor = self.model(sudokuTensor)
+            decisionProbabilities, solutionTensor = torch.max(outputSudokuTensor,2) 
+            _, mask = torch.where(sudokuTensor>0)
+            decisionProbabilities[0,mask] = float('-inf')
+            mostLikelyCell = torch.argmax(decisionProbabilities)
+            sudokuTensor[0,mostLikelyCell] = solutionTensor[0,mostLikelyCell]+1
+            print('Step: {}'.format(step))
+            print('Filled Row {}, Column {}'.format(mostLikelyCell//9+1,mostLikelyCell%9+1))
+            self.plotter.plotMatrix(sudokuTensor)
+            step+=1
+        
+        return sudokuTensor
+
+    def __getSudokuSolution(self, sudoku, fast):
+
+        with torch.no_grad():
+            if fast:
+                solvedSudoku = self.__solveSudokuInOneStep(sudoku)
+            else:
+                solvedSudoku = self.__solveSudokuStepByStep(sudoku)
+        return solvedSudoku
+
+
+    def __evaluateSudoku(self, sudokuTensor, fast):
+
+        speed = 'Fast' if fast else 'Slow'
+        sudokuMatrix = copy.copy(sudokuTensor).view(9,9).tolist()
+        if self.sudokuChecker.checkSudoku(sudokuMatrix):
+            print('{} Sudoku Is Correct\n'.format(speed))
+        else:
+            print('{} Sudoku Is UnCorrect\n'.format(speed))
+
+    def solveSudoku(self, sudoku, fast=True):
+        solvedSudokuTensor = self.__getSudokuSolution(sudoku, fast)
+        self.__evaluateSudoku(solvedSudokuTensor, fast)
+         
 if __name__ == '__main__':
 
-    model = torch.load(sys.argv[1], map_location=torch.device('cpu'))
-    model.eval()
     #sudoku = ['000402063', '005810097', '431006500', '010904000', '847000006', '500180002', '089571000', '063000000', '000000279']
     sudoku = ['800370200', '305840760', '970065043', '436092507', '008607400', '057403016', '680034105', '700520690', '042906008']
     #864371259 325849761 971265843 436192587 198657432 257483916 689734125 713528694 542916378
 
-    print('Proposed Sudoku')
-    plotMatrix(prepareTensor(sudoku))
-    
-    #Slow Method
-    sudokuSolvedTensor = solveSudokuStepByStep(model, prepareTensor(sudoku)) 
-    if checkIfSudokuIsCorrect(sudokuSolvedTensor):
-        print('Slow Sudoku Is Correct\n')
-    else:
-        print('Slow Sudoku Is UnCorrect\n')
-
-    print('--------------------------------\n')
-    
-    ##Fast Method
-
-    #sudokuSolvedTensor = solveSudokuFast(model, prepareTensor(sudoku)) 
-    #if checkIfSudokuIsCorrect(sudokuSolvedTensor):
-    #    print('Fast Sudoku Is Correct')
-    #else:
-    #    print('Fast Sudoku Is UnCorrect')
-
+    sudokuSolver = SudokuSolver(sys.argv[1])
+    sudokuSolver.solveSudoku(sudoku,fast=False)
     
