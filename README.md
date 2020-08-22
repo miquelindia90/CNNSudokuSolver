@@ -26,8 +26,16 @@ is adapted to use their sudoku.csv file. You can download it from the following 
 
 # Trainning
 
-Under Construction
+To launch a training, you only need to run the following script: 
 
+```batch
+python scripts/train.py --CSVDataPath <path_to_csv/sudoku.scv> --dropSamplingStrategy
+```
+
+The code automatically detects if there is a GPU available and stars the training.
+If not the training is run with CPUs. We recommend to use GPUs for the training for the speed boost.
+The system will store the model and a few samples each epoch in the directory path stablished --outputSamplesDirectory.
+ 
 # Inference 
 
 Under Construction
