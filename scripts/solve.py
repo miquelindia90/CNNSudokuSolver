@@ -68,10 +68,12 @@ class SudokuSolver:
     def __solveSudokuInOneStep(self, sudoku):
         sudokuTensor = self.__prepareSudokuTensor(sudoku)
         outputSudokuTensor = self.model(sudokuTensor)
-        solutionTensor = torch.argmax(outputSudokuTensor,2)
-        solutionTensor += 1  
-        self.plotter.plotMatrix(solutionTensor)
-        return solutionTensor
+        solutionTensor = torch.argmax(outputSudokuTensor,-1)
+        solutionTensor += 1
+        mask = torch.where(sudokuTensor==0)
+        sudokuTensor[mask]+=solutionTensor[mask]
+        self.plotter.plotMatrix(sudokuTensor)
+        return sudokuTensor
 
     def __solveSudokuStepByStep(self, sudoku):
         sudokuTensor = self.__prepareSudokuTensor(sudoku)
@@ -126,4 +128,5 @@ if __name__ == '__main__':
     sudokuSolver = SudokuSolver(sys.argv[1])
     sudoku = readSudokuFromTest(sys.argv[2])
     sudokuSolver.solveSudoku(sudoku)
+    sudokuSolver.solveSudoku(sudoku, fast=True)
     
