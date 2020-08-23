@@ -41,7 +41,7 @@ class Trainner:
         self.criterion = nn.CrossEntropyLoss()
 
     def __loadOptimizer(self):
-        self.optimizer = optim.Adam(self.model.parameters(), lr=0.0001)
+        self.optimizer = optim.Adam(self.model.parameters(), lr=self.parameters.learningRate)
 
     def __logInformation(self, pred, tensorOutput, mask, loss):
         self.trainLoss += loss.item()
@@ -155,11 +155,13 @@ if __name__ == '__main__':
     parser.add_argument('--batchSize', type=int, default=128) 
     parser.add_argument('--maxEpochs', type=int, default=10000) 
     parser.add_argument('--CSVDataPath', type=str, default='sudoku.csv')
-    parser.add_argument('--outputSamplesDirectory', type=str, default='./out2')
+    parser.add_argument('--outputSamplesDirectory', type=str, default='./out1')
     parser.add_argument('--dataSamples', type=int, default=1000000, help='Number Of Samples Used from the CSV') 
     parser.add_argument('--dropSamplingStrategy', action='store_true')
 
-    parser.add_argument('--numberOfKernels', type=float, default=128)
+    parser.add_argument('--numberOfKernels', type=float, default=32)
+    parser.add_argument('--learningRate', type=float, default=0.001)
+    
     parser.add_argument('--printEvery', type=int, default=1000, help='Trainning Logging Frequency in # of batches') 
     parameters = parser.parse_args() 
     trainner = Trainner(parameters)
