@@ -13,7 +13,7 @@ def prepareTensor(listOfSudokus):
 
     return tensor.long()
 
-def prepareSudokuTensors(dataFrame, train_split=0.8):
+def prepareSudokuTensors(dataFrame, train_split=0.9):
     
     dataSize = dataFrame.shape[0]
     quizzes = prepareTensor(dataFrame.quizzes.to_list())
@@ -40,8 +40,8 @@ class Dataset(data.Dataset):
 
     def __getInput(self, index):
         likelihood = round(random.uniform(0, 1),1)
-        if likelihood>0.5:
-            mask = torch.where(torch.randn(self.sudokusSolutions[index,:].size()) > likelihood)[0]
+        if likelihood>0.3:
+            mask = torch.where(torch.randn(self.sudokusSolutions[index,:].size()) > round(random.uniform(-1, 1),1))[0]
             sudokuTensor = copy.deepcopy(self.sudokusSolutions[index,:])
             sudokuTensor[mask]=0        
             return sudokuTensor
