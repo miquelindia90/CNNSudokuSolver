@@ -87,8 +87,10 @@ class Trainner:
         return not (bad_rows or bad_cols or bad_squares)
     
     @staticmethod
-    def __toListFormat(solvedSudokus):
+    def __toListFormat(solvedSudokus, unsolvedSudokus):
         solvedSudokus = torch.argmax(solvedSudokus, dim=-1) + 1
+        mask = torch.where(unsolvedSudokus>0)
+        solvedSudokus[mask] = unsolvedSudokus[mask]
         return solvedSudokus.view(-1,9,9).tolist()
 
     def __checkBatchAccuracy(self, pred, outputTensor):
@@ -103,7 +105,7 @@ class Trainner:
         return strList
 
     def __writeLastBatch(self, unsolvedSudokus, solvedSudokus, targetSudokus):
-        solvedSudokus = self.__toListFormat(solvedSudokus)
+        solvedSudokus = self.__toListFormat(solvedSudokus, unsolvedSudokus)
         unsolvedSudokus = unsolvedSudokus.view(-1,9,9).tolist()
         targetSudokus = targetSudokus.view(-1,9,9).tolist()
         with open('{}/epoch{}.res'.format(self.parameters.outputSamplesDirectory, self.epoch),'w') as outputFile:
