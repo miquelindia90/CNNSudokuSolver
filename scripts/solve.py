@@ -28,7 +28,7 @@ class SudokuChecker:
                     for elem in column:
                         squareNumbers.append(elem)
                 squares.append(squareNumbers)
-
+G
         bad_squares = [square for square in squares if not self.__checkSudokuConstraint(square)]
         return not (bad_rows or bad_cols or bad_squares)
 
@@ -49,14 +49,14 @@ class SudokuPlotter:
         print('')
 
 class SudokuSolver:
-    def __init__(self, modelPath):
+    def __init__(self, modelPath, recurrentIterations=10):
         self.sudokuChecker = SudokuChecker()
         self.plotter = SudokuPlotter()
-        self.__loadModel(modelPath)
+        self.__loadModel(modelPath, recurrentIterations)
 
-    def __loadModel(self, modelPath):
+    def __loadModel(self, modelPath, recurrentIterations):
 
-        self.model = SudokuNet()
+        self.model = SudokuNet(recurrentIterations=recurrentIterations)
         self.model.load_state_dict(torch.load(modelPath, map_location=torch.device('cpu')))
         self.model.to(torch.device('cpu'))
         self.model.eval()
@@ -129,7 +129,7 @@ def readSudokuFromTest(sudokuPath):
 
 if __name__ == '__main__':
 
-    sudokuSolver = SudokuSolver(sys.argv[1])
+    sudokuSolver = SudokuSolver(sys.argv[1], recurrentIterations=sys.argv[3])
     sudoku = readSudokuFromTest(sys.argv[2])
     sudokuSolver.solveSudoku(sudoku)
     sudokuSolver.solveSudoku(sudoku, fast=True)
