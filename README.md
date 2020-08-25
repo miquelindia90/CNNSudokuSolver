@@ -46,14 +46,14 @@ Example:
 Consider the following sudoku, which corresponds to the sample in `data/sudoku1.txt`:
 
 <pre>
-1  0  0  0  6  0  0  0  2<br/>
-0  8  0  0  3  9  0  0  0<br/>
-3  0  0  4  1  2  0  0  7<br/>
-0  2  0  0  4  0  7  0  1<br/>
-0  1  6  0  5  0  9  8  0<br/>
-9  0  4  0  0  7  0  0  6<br/>
-0  9  7  5  0  0  6  0  3<br/>
-0  0  1  0  0  8  5  0  0<br/>
+1  0  0  0  6  0  0  0  2
+0  8  0  0  3  9  0  0  0
+3  0  0  4  1  2  0  0  7
+0  2  0  0  4  0  7  0  1
+0  1  6  0  5  0  9  8  0
+9  0  4  0  0  7  0  0  6
+0  9  7  5  0  0  6  0  3
+0  0  1  0  0  8  5  0  0
 2  5  0  0  9  0  0  0  0</pre>
 
 
