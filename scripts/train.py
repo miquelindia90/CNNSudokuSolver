@@ -156,8 +156,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Train a DL based SudokuSolver')
     parser.add_argument('--batchSize', type=int, default=128) 
     parser.add_argument('--maxEpochs', type=int, default=10000) 
-    parser.add_argument('--CSVDataPath', type=str, default='sudoku.csv')
-    parser.add_argument('--outputSamplesDirectory', type=str, default='./out2')
+    parser.add_argument('--CSVDataPath', type=str, default='data/sudoku.csv')
+    parser.add_argument('--outputSamplesDirectory', type=str, default='./out1')
     parser.add_argument('--dataSamples', type=int, default=1000000, help='Number Of Samples Used from the CSV') 
     parser.add_argument('--dropSamplingStrategy', action='store_true')
 
