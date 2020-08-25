@@ -13,7 +13,7 @@ from model import *
 class Trainner:
     def __init__(self, parameters):
         self.parameters = parameters
-        self.__initSeeds()
+        self.__initSeeds(parameters.seed)
         self.__loadDataLoaders()
         self.__prepareModel()
         self.__prepareOutputDirectories()
