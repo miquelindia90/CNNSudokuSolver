@@ -24,7 +24,7 @@ If you want to try to train some models so as to reproduce the results you need 
 of unsolved/solved sudokus. Here we have used the [1 million Sudoku games](https://www.kaggle.com/bryanpark/sudoku) corpus from Kaggle. The code
 is adapted to use their sudoku.csv file. You can download it from the following [link](https://www.kaggle.com/bryanpark/sudoku).
 
-# Trainning
+# Training
 
 To launch a training, you only need to run the following script: 
 
@@ -74,9 +74,8 @@ You will get the result of the sudoku and a message with the result:
 9  3  4  1  8  7  2  5  6
 8  9  7  5  2  4  6  1  3
 6  4  1  3  7  8  5  2  9
-2  5  3  6  9  1  4  7  8</pre>
+2  5  3  6  9  1  4  7  8
 
-
-Fast Sudoku Is Correct
+Fast Sudoku Is Correct</pre>
 
 
