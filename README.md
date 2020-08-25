@@ -76,6 +76,15 @@ You will get the result of the sudoku and a message with the result:
 6  4  1  3  7  8  5  2  9
 2  5  3  6  9  1  4  7  8
 
-Fast Sudoku Is Correct</pre>
+Fast Sudoku Is Correct
+
+Sudokus Solved: 100.0%</pre>
+
+This script can be run to evaluate more than sudoku. It is only needed tp separate the sudokus in the test file with break lines. You can 
+launch the following example to see how it works:
+
+```batch
+python scripts/solve.py model/modelV1.pt data/sudokusTest.txt
+```
 
 
