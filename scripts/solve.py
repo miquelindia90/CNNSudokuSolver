@@ -112,24 +112,42 @@ class SudokuSolver:
         sudokuMatrix = copy.copy(sudokuTensor).view(9,9).tolist()
         if self.sudokuChecker.checkSudoku(sudokuMatrix):
             print('{} Sudoku Is Correct\n'.format(speed))
+            return True
         else:
             print('{} Sudoku Is UnCorrect\n'.format(speed))
+            return False
 
     def solveSudoku(self, sudoku, fast=False):
         solvedSudokuTensor = self.__getSudokuSolution(sudoku, fast)
         self.__evaluateSudoku(solvedSudokuTensor, fast)
+    
+    def solveSudokus(self, sudokus, fast=False):
+        accuracyCount = 0.
+        for sudoku in sudokus:
+            solvedSudokuTensor = self.__getSudokuSolution(sudoku, fast)
+            if self.__evaluateSudoku(solvedSudokuTensor, fast):
+                accuracyCount += 1
+        print('Sudokus Solved: {}%'.format(accuracyCount*100/len(sudokus)))
          
 
-def readSudokuFromTest(sudokuPath):
-    sudokuAsList = list()
+def readSudokusFromTest(sudokuPath):
+    listOfInputSudokus = list()
     with open(sudokuPath) as inputFile:
-        for line in inputFile:
-            sudokuAsList.append(''.join(line.strip().split()))
-    return sudokuAsList
+        sudokus = inputFile.read().split('\n\n')
+        for sudoku in sudokus:
+            sudokuAsList = list()
+            lines = sudoku.split('\n')    
+            for line in lines:
+                sudokuAsList.append(''.join(line.strip().split()))
+            listOfInputSudokus.append(sudokuAsList)
+
+    return listOfInputSudokus
 
 if __name__ == '__main__':
 
     sudokuSolver = SudokuSolver(sys.argv[1])
-    sudoku = readSudokuFromTest(sys.argv[2])
-    sudokuSolver.solveSudoku(sudoku, fast=True)
+    sudokus = readSudokusFromTest(sys.argv[2])
+    sudokuSolver.solveSudokus(sudokus, fast=True)
+    
+    #sudokuSolver.solveSudoku(sudoku, fast=True)
     
