@@ -4,6 +4,7 @@ import copy
 import torch
 import itertools
 
+from model import *
 
 class SudokuChecker:
     def __init__(self):
@@ -48,13 +49,16 @@ class SudokuPlotter:
         print('')
 
 class SudokuSolver:
-    def __init__(self, modelPath):
+    def __init__(self, modelPath, recurrentIterations=10):
         self.sudokuChecker = SudokuChecker()
         self.plotter = SudokuPlotter()
-        self.__loadModel(modelPath)
+        self.__loadModel(modelPath, recurrentIterations)
 
-    def __loadModel(self, modelPath):
-        self.model = torch.load(modelPath, map_location=torch.device('cpu'))
+    def __loadModel(self, modelPath, recurrentIterations):
+
+        self.model = SudokuNet(recurrentIterations=recurrentIterations)
+        self.model.load_state_dict(torch.load(modelPath, map_location=torch.device('cpu')))
+        self.model.to(torch.device('cpu'))
         self.model.eval()
 
     @staticmethod
@@ -67,7 +71,7 @@ class SudokuSolver:
 
     def __solveSudokuInOneStep(self, sudoku):
         sudokuTensor = self.__prepareSudokuTensor(sudoku)
-        outputSudokuTensor = self.model(sudokuTensor)
+        _, outputSudokuTensor = self.model(sudokuTensor)
         solutionTensor = torch.argmax(outputSudokuTensor,-1)
         solutionTensor += 1
         mask = torch.where(sudokuTensor==0)
@@ -79,7 +83,7 @@ class SudokuSolver:
         sudokuTensor = self.__prepareSudokuTensor(sudoku)
         step=1
         while torch.sum(sudokuTensor==0)>0:
-            outputSudokuTensor = self.model(sudokuTensor)
+            _, outputSudokuTensor = self.model(sudokuTensor)
             decisionProbabilities, solutionTensor = torch.max(outputSudokuTensor,2) 
             _, mask = torch.where(sudokuTensor>0)
             decisionProbabilities[0,mask] = float('-inf')
@@ -125,8 +129,7 @@ def readSudokuFromTest(sudokuPath):
 
 if __name__ == '__main__':
 
-    sudokuSolver = SudokuSolver(sys.argv[1])
+    sudokuSolver = SudokuSolver(sys.argv[1], recurrentIterations=int(sys.argv[3]))
     sudoku = readSudokuFromTest(sys.argv[2])
-    sudokuSolver.solveSudoku(sudoku)
     sudokuSolver.solveSudoku(sudoku, fast=True)
     
