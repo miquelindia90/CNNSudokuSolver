@@ -45,17 +45,15 @@ This code reads a quizz sudoku from a file, prints the results and evaluates if 
 Example:
 Consider the following sudoku, which corresponds to the sample in `data/sudoku1.txt`:
 
-`
-1 0 0 0 6 0 0 0 2
-0 8 0 0 3 9 0 0 0
-3 0 0 4 1 2 0 0 7
-0 2 0 0 4 0 7 0 1
-0 1 6 0 5 0 9 8 0
-9 0 4 0 0 7 0 0 6
-0 9 7 5 0 0 6 0 3
-0 0 1 0 0 8 5 0 0
-2 5 0 0 9 0 0 0 0
-`
+1 0 0 0 6 0 0 0 2<br/>
+0 8 0 0 3 9 0 0 0<br/>
+3 0 0 4 1 2 0 0 7<br/>
+0 2 0 0 4 0 7 0 1<br/>
+0 1 6 0 5 0 9 8 0<br/>
+9 0 4 0 0 7 0 0 6<br/>
+0 9 7 5 0 0 6 0 3<br/>
+0 0 1 0 0 8 5 0 0<br/>
+2 5 0 0 9 0 0 0 0<br/>
 
 If you run the following script:
 
@@ -65,17 +63,15 @@ python scripts/solve.py model/modelV1.pt data/sudoku1.txt
 
 You will get the result of the sudoku and a message with the result:
 
-`
-1 7 9 8 6 5 3 4 2
-4 8 2 7 3 9 1 6 5
-3 6 5 4 1 2 8 9 7
-5 2 8 9 4 6 7 3 1
-7 1 6 2 5 3 9 8 4
-9 3 4 1 8 7 2 5 6
-8 9 7 5 2 4 6 1 3
-6 4 1 3 7 8 5 2 9
-2 5 3 6 9 1 4 7 8
-`
+1 7 9 8 6 5 3 4 2<br/>
+4 8 2 7 3 9 1 6 5<br/>
+3 6 5 4 1 2 8 9 7<br/>
+5 2 8 9 4 6 7 3 1<br/>
+7 1 6 2 5 3 9 8 4<br/>
+9 3 4 1 8 7 2 5 6<br/>
+8 9 7 5 2 4 6 1 3<br/>
+6 4 1 3 7 8 5 2 9<br/>
+2 5 3 6 9 1 4 7 8<br/>
 
 Fast Sudoku Is Correct
 
