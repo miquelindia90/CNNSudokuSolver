@@ -1,6 +1,7 @@
 import os 
 import argparse
 import itertools
+import random
 import torch
 import torch.utils.data as data
 import torch.nn as nn
@@ -12,12 +13,18 @@ from model import *
 class Trainner:
     def __init__(self, parameters):
         self.parameters = parameters
+        self.__initSeeds()
         self.__loadDataLoaders()
         self.__prepareModel()
         self.__prepareOutputDirectories()
         self.__loadOptimizer()
         self.__loadCriterion()
         print('Training Set Up Ready')
+
+    def __initSeeds(self, seed):
+
+        torch.manual_seed(seed)
+        random.seed(seed)
 
     def __loadDataLoaders(self):
 
@@ -165,6 +172,7 @@ if __name__ == '__main__':
     parser.add_argument('--recurrentIterations', type=int, default=10)
     parser.add_argument('--learningRate', type=float, default=0.0001)
     
+    parser.add_argument('--seed', type=int, default=1234) 
     parser.add_argument('--printEvery', type=int, default=1000, help='Trainning Logging Frequency in # of batches') 
     parameters = parser.parse_args() 
     trainner = Trainner(parameters)
