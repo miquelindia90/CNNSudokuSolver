@@ -129,7 +129,7 @@ def readSudokuFromTest(sudokuPath):
 
 if __name__ == '__main__':
 
-    sudokuSolver = SudokuSolver(sys.argv[1], recurrentIterations=int(sys.argv[3]))
+    sudokuSolver = SudokuSolver(sys.argv[1])
     sudoku = readSudokuFromTest(sys.argv[2])
     sudokuSolver.solveSudoku(sudoku, fast=True)
     
