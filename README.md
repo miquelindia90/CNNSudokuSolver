@@ -45,6 +45,7 @@ This code reads a quizz sudoku from a file, prints the results and evaluates if 
 Example:
 Consider the following sudoku, which corresponds to the sample in `data/sudoku1.txt`:
 
+`
 1 0 0 0 6 0 0 0 2
 0 8 0 0 3 9 0 0 0
 3 0 0 4 1 2 0 0 7
@@ -54,6 +55,7 @@ Consider the following sudoku, which corresponds to the sample in `data/sudoku1.
 0 9 7 5 0 0 6 0 3
 0 0 1 0 0 8 5 0 0
 2 5 0 0 9 0 0 0 0
+`
 
 If you run the following script:
 
@@ -63,6 +65,7 @@ python scripts/solve.py model/modelV1.pt data/sudoku1.txt
 
 You will get the result of the sudoku and a message with the result:
 
+`
 1 7 9 8 6 5 3 4 2
 4 8 2 7 3 9 1 6 5
 3 6 5 4 1 2 8 9 7
@@ -72,6 +75,7 @@ You will get the result of the sudoku and a message with the result:
 8 9 7 5 2 4 6 1 3
 6 4 1 3 7 8 5 2 9
 2 5 3 6 9 1 4 7 8
+`
 
 Fast Sudoku Is Correct
 
