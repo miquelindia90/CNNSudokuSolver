@@ -28,7 +28,7 @@ class SudokuChecker:
                     for elem in column:
                         squareNumbers.append(elem)
                 squares.append(squareNumbers)
-G
+
         bad_squares = [square for square in squares if not self.__checkSudokuConstraint(square)]
         return not (bad_rows or bad_cols or bad_squares)
 
@@ -129,8 +129,7 @@ def readSudokuFromTest(sudokuPath):
 
 if __name__ == '__main__':
 
-    sudokuSolver = SudokuSolver(sys.argv[1], recurrentIterations=sys.argv[3])
+    sudokuSolver = SudokuSolver(sys.argv[1], recurrentIterations=int(sys.argv[3]))
     sudoku = readSudokuFromTest(sys.argv[2])
-    sudokuSolver.solveSudoku(sudoku)
     sudokuSolver.solveSudoku(sudoku, fast=True)
     
