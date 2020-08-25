@@ -30,7 +30,7 @@ class Trainner:
 
         print('Preparing Models')
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        self.model = SudokuNet(numberOfKernels = self.parameters.numberOfKernels)
+        self.model = SudokuNet(numberOfKernels = self.parameters.numberOfKernels, recurrentIterations = self.parameters.recurrentIterations)
         self.model.to(self.device)
 
     def __prepareOutputDirectories(self):
@@ -87,8 +87,10 @@ class Trainner:
         return not (bad_rows or bad_cols or bad_squares)
     
     @staticmethod
-    def __toListFormat(solvedSudokus):
+    def __toListFormat(solvedSudokus, unsolvedSudokus):
         solvedSudokus = torch.argmax(solvedSudokus, dim=-1) + 1
+        mask = torch.where(unsolvedSudokus>0)
+        solvedSudokus[mask] = unsolvedSudokus[mask]
         return solvedSudokus.view(-1,9,9).tolist()
 
     def __checkBatchAccuracy(self, pred, outputTensor):
@@ -103,7 +105,7 @@ class Trainner:
         return strList
 
     def __writeLastBatch(self, unsolvedSudokus, solvedSudokus, targetSudokus):
-        solvedSudokus = self.__toListFormat(solvedSudokus)
+        solvedSudokus = self.__toListFormat(solvedSudokus, unsolvedSudokus)
         unsolvedSudokus = unsolvedSudokus.view(-1,9,9).tolist()
         targetSudokus = targetSudokus.view(-1,9,9).tolist()
         with open('{}/epoch{}.res'.format(self.parameters.outputSamplesDirectory, self.epoch),'w') as outputFile:
@@ -119,7 +121,7 @@ class Trainner:
         with torch.no_grad():
             for batchIndex, batch in enumerate(self.validDataLoader):
                 unsolvedSudokus, _ = self.__getIOTensorFromBatch(batch)
-                solvedSudokus = self.model(unsolvedSudokus)
+                _, solvedSudokus = self.model(unsolvedSudokus)
                 mask = torch.where(unsolvedSudokus.view(-1)==0)
                 validationAccuracy += self.__checkBatchAccuracy(solvedSudokus.view(-1,9)[mask], batch[1].view(-1)[mask])
 
@@ -130,7 +132,7 @@ class Trainner:
     def __saveModel(self):
         
         modelName='{}/model{}.pt'.format(self.parameters.outputSamplesDirectory, self.epoch)
-        torch.save(self.model, modelName)
+        torch.save(self.model.state_dict(), modelName)
 
     def train(self):
 
@@ -139,12 +141,12 @@ class Trainner:
             for self.batchIndex, batch in enumerate(self.trainDataLoader):
                 self.optimizer.zero_grad()
                 tensorInput, tensorOutput = self.__prepareIOTrainTensors(batch)
-                pred = self.model(tensorInput)
+                pred1, pred2 = self.model(tensorInput)
                 mask = torch.where(tensorInput.view(-1)==0)
-                loss = self.criterion(pred.view(-1,9)[mask], tensorOutput[mask])
+                loss = self.criterion(pred1.view(-1,9)[mask], tensorOutput[mask]) + self.criterion(pred2.view(-1,9)[mask], tensorOutput[mask])
                 loss.backward()
                 self.optimizer.step()
-                self.__logInformation(pred, batch[1], mask, loss)
+                self.__logInformation(pred2, batch[1], mask, loss)
 
             self.__evaluate()
             self.__saveModel()
@@ -154,13 +156,14 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Train a DL based SudokuSolver')
     parser.add_argument('--batchSize', type=int, default=128) 
     parser.add_argument('--maxEpochs', type=int, default=10000) 
-    parser.add_argument('--CSVDataPath', type=str, default='sudoku.csv')
+    parser.add_argument('--CSVDataPath', type=str, default='data/sudoku.csv')
     parser.add_argument('--outputSamplesDirectory', type=str, default='./out1')
     parser.add_argument('--dataSamples', type=int, default=1000000, help='Number Of Samples Used from the CSV') 
     parser.add_argument('--dropSamplingStrategy', action='store_true')
 
-    parser.add_argument('--numberOfKernels', type=float, default=32)
-    parser.add_argument('--learningRate', type=float, default=0.001)
+    parser.add_argument('--numberOfKernels', type=int, default=32)
+    parser.add_argument('--recurrentIterations', type=int, default=10)
+    parser.add_argument('--learningRate', type=float, default=0.0001)
     
     parser.add_argument('--printEvery', type=int, default=1000, help='Trainning Logging Frequency in # of batches') 
     parameters = parser.parse_args() 
