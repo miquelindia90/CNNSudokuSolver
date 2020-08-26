@@ -50,16 +50,18 @@ class Trainner:
     def __loadOptimizer(self):
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.parameters.learningRate)
 
-    def __logInformation(self, pred, tensorOutput, mask, loss):
+    def __logInformation(self, pred1,  pred2, tensorOutput, mask, loss):
         self.trainLoss += loss.item()
-        self.trainAccuracy += self.__checkBatchAccuracy(pred.view(-1,9)[mask], tensorOutput.view(-1)[mask])
+        self.preLabelsTrainAccuracy += self.__checkBatchAccuracy(pred1.view(-1,9)[mask], tensorOutput.view(-1)[mask])
+        self.trainAccuracy += self.__checkBatchAccuracy(pred2.view(-1,9)[mask], tensorOutput.view(-1)[mask])
         self.batchCount+=1
         if self.batchCount % self.parameters.printEvery == 0:
-            print('Epoch: {}, Batch: {}, Train Loss: {}, Train Accuracy: {}%'.format(self.epoch, self.batchIndex+1, self.trainLoss/self.batchCount, self.trainAccuracy*100/self.batchCount))
+            print('Epoch: {}, Batch: {}, Train Loss: {}, PreLabels Train Accuracy: {}% Train Accuracy: {}%'.format(self.epoch, self.batchIndex+1, self.trainLoss/self.batchCount, self.preLabelsTrainAccuracy*100/self.batchCount, self.trainAccuracy*100/self.batchCount))
             self.__initLoggingVariables()
 
     def __initLoggingVariables(self):
         self.trainLoss=0
+        self.preLabelsTrainAccuracy=0
         self.trainAccuracy=0
         self.batchCount=0
     
@@ -124,16 +126,18 @@ class Trainner:
 
     def __evaluate(self):
         self.model.eval()
+        preValidationAccuracy = 0.
         validationAccuracy = 0.
         with torch.no_grad():
             for batchIndex, batch in enumerate(self.validDataLoader):
                 unsolvedSudokus, _ = self.__getIOTensorFromBatch(batch)
-                _, solvedSudokus = self.model(unsolvedSudokus)
+                preSolvedSudokus, solvedSudokus = self.model(unsolvedSudokus)
                 mask = torch.where(unsolvedSudokus.view(-1)==0)
+                preValidationAccuracy += self.__checkBatchAccuracy(preSolvedSudokus.view(-1,9)[mask], batch[1].view(-1)[mask])
                 validationAccuracy += self.__checkBatchAccuracy(solvedSudokus.view(-1,9)[mask], batch[1].view(-1)[mask])
 
         self.__writeLastBatch(unsolvedSudokus, solvedSudokus, batch[1].squeeze())
-        print('ValidationAccuracy: {}%'.format(validationAccuracy*100/(batchIndex + 1)))
+        print('Pre-Validation Accuracy: {}%, Validation Accuracy: {}%'.format(preValidationAccuracy*100/(batchIndex+1) ,validationAccuracy*100/(batchIndex+1)))
         self.model.train()
 
     def __saveModel(self):
@@ -153,7 +157,7 @@ class Trainner:
                 loss = self.criterion(pred1.view(-1,9)[mask], tensorOutput[mask]) + self.criterion(pred2.view(-1,9)[mask], tensorOutput[mask])
                 loss.backward()
                 self.optimizer.step()
-                self.__logInformation(pred2, batch[1], mask, loss)
+                self.__logInformation(pred1, pred2, batch[1], mask, loss)
 
             self.__evaluate()
             self.__saveModel()
@@ -162,7 +166,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Train a DL based SudokuSolver')
     parser.add_argument('--batchSize', type=int, default=128) 
-    parser.add_argument('--maxEpochs', type=int, default=10000) 
+    parser.add_argument('--maxEpochs', type=int, default=2000) 
     parser.add_argument('--CSVDataPath', type=str, default='data/sudoku.csv')
     parser.add_argument('--outputSamplesDirectory', type=str, default='./out1')
     parser.add_argument('--dataSamples', type=int, default=1000000, help='Number Of Samples Used from the CSV') 

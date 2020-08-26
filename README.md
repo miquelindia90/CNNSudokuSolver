@@ -80,7 +80,7 @@ Fast Sudoku Is Correct
 
 Sudokus Solved: 100.0%</pre>
 
-This script can be run to evaluate more than sudoku. It is only needed tp separate the sudokus in the test file with break lines. You can 
+This script can be run to evaluate more than one sudoku. It is only needed tp separate the sudokus in the test file with break lines. You can 
 launch the following example to see how it works:
 
 ```batch
