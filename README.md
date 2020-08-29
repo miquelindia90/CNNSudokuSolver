@@ -87,4 +87,7 @@ launch the following example to see how it works:
 python scripts/solve.py model/modelV1.pt data/sudokusTest.txt
 ```
 
+# Results and Observations
+
+Depending on how many epochs you let the model training, it's very likely you get above a 90% of validation accuracy in terms of sudokus solved at 100%. The robustness of the models trained is very questionable. I've tried the model in some other tests and the results have decreased considerably. My intuition is that the network is modeled as a decoder which corresponds to the inverse function that has generated the sudoku quizzes. Hence if the sudokus tested comes from a generator a bit different from the set of generators used for the train data, the results are going to be bad.
 
