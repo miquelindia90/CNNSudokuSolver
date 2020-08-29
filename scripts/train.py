@@ -1,3 +1,4 @@
+import sys
 import os 
 import argparse
 import itertools
@@ -10,6 +11,7 @@ import torch.optim as optim
 
 from dataset import *
 from model import *
+from utilities import *
 
 class Trainner:
     def __init__(self, parameters):
@@ -21,6 +23,7 @@ class Trainner:
         self.__prepareOutputDirectories()
         self.__loadOptimizer()
         self.__loadCriterion()
+        self.sudokuChecker=SudokuChecker()
         logging.info('Training Set Up Ready')
 
     def __initSeeds(self, seed):
@@ -97,6 +100,18 @@ class Trainner:
         correctElements = (torch.sum(pred.cpu() == outputTensor.cpu())).item()
         return float(correctElements)/(pred.size(0))
     
+    def __checkBatchAccuracy(self, unsolvedSudoku, pred):
+        pred = torch.argmax(pred, dim=-1) + 1
+        gridMask = torch.where(unsolvedSudoku==0)
+        solvedSudoku = unsolvedSudoku
+        solvedSudoku[gridMask]+=pred[gridMask]
+        correctSudokusCount=0.
+        for index in range(solvedSudoku.size(0)):
+            if self.sudokuChecker.checkSudoku(solvedSudoku[index].view(9,9).tolist()):
+                correctSudokusCount+=1
+        return correctSudokusCount/solvedSudoku.size(0)
+                
+
     @staticmethod
     def __toStr(listOfIntegers):
 
@@ -117,16 +132,18 @@ class Trainner:
     def __evaluate(self):
         self.model.eval()
         validationGridAccuracy = 0.
-        
+        validationAccuracy = 0.
+    
         with torch.no_grad():
             for batchIndex, batch in enumerate(self.validDataLoader):
                 unsolvedSudokus, _ = self.__getIOTensorFromBatch(batch)
                 preSolvedSudokus, solvedSudokus = self.model(unsolvedSudokus)
-                mask = torch.where(unsolvedSudokus.view(-1)==0)
-                validationGridAccuracy += self.__checkBatchGridAccuracy(solvedSudokus.view(-1,9)[mask], batch[1].view(-1)[mask])
+                gridMask = torch.where(unsolvedSudokus.view(-1)==0)
+                validationGridAccuracy += self.__checkBatchGridAccuracy(solvedSudokus.view(-1,9)[gridMask], batch[1].view(-1)[gridMask])
+                validationAccuracy += self.__checkBatchAccuracy(unsolvedSudokus, solvedSudokus)
 
         self.__writeLastBatch(unsolvedSudokus, solvedSudokus, batch[1].squeeze())
-        logging.info('Validation Grid Accuracy: {}%'.format(validationGridAccuracy*100/(batchIndex+1)))
+        logging.info('Validation Grid Accuracy: {}%, Validation Accuracy: {}%'.format(validationGridAccuracy*100/(batchIndex+1), validationAccuracy*100/(batchIndex+1)))
         self.model.train()
 
     def __saveModel(self):
@@ -157,9 +174,9 @@ if __name__ == '__main__':
     parser.add_argument('--batchSize', type=int, default=128) 
     parser.add_argument('--maxEpochs', type=int, default=2000) 
     parser.add_argument('--CSVDataPath', type=str, default='data/sudoku.csv')
-    parser.add_argument('--outputSamplesDirectory', type=str, default='./out2')
-    parser.add_argument('--logFile', type=str, default='./out2/train.log')
-    parser.add_argument('--dataSamples', type=int, default=10000, help='Number Of Samples Used from the CSV') 
+    parser.add_argument('--outputSamplesDirectory', type=str, default='./out1')
+    parser.add_argument('--logFile', type=str, default='./out1/train.log')
+    parser.add_argument('--dataSamples', type=int, default=1000000, help='Number Of Samples Used from the CSV') 
     parser.add_argument('--dropSamplingStrategy', action='store_true')
 
     parser.add_argument('--numberOfKernels', type=int, default=32)
@@ -167,7 +184,7 @@ if __name__ == '__main__':
     parser.add_argument('--learningRate', type=float, default=0.0001)
     
     parser.add_argument('--seed', type=int, default=1234) 
-    parser.add_argument('--printEvery', type=int, default=10, help='Trainning Logging Frequency in # of batches') 
+    parser.add_argument('--printEvery', type=int, default=1000, help='Trainning Logging Frequency in # of batches') 
     parameters = parser.parse_args() 
     trainner = Trainner(parameters)
     trainner.train()
