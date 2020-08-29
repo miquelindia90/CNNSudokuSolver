@@ -87,27 +87,6 @@ class Trainner:
         tensorInput, tensorOutput = self.__getIOTensorFromBatch(batch)
         return tensorInput, tensorOutput.view(-1)
     
-    def __sudoku_ok(self, line):
-        return (len(line) == 9 and sum(line) == sum(set(line)))
-
-    def __checkSudoku(self, grid):
-
-        bad_rows = [row for row in grid if not self.__sudoku_ok(row)]
-        grid = list(zip(*grid))
-        bad_cols = [col for col in grid if not self.__sudoku_ok(col)]
-        squares = []
-        for i in range(0, 9, 3):
-            for j in range(0, 9, 3):
-                square = list(itertools.chain(row[j:j+3] for row in grid[i:i+3]))
-                squareNumbers = list()
-                for column in square:
-                    for elem in column:
-                        squareNumbers.append(elem)
-                squares.append(squareNumbers)
-                
-        bad_squares = [square for square in squares if not self.__sudoku_ok(square)]
-        return not (bad_rows or bad_cols or bad_squares)
-    
     @staticmethod
     def __toListFormat(solvedSudokus, unsolvedSudokus):
         solvedSudokus = torch.argmax(solvedSudokus, dim=-1) + 1
