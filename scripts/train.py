@@ -65,16 +65,14 @@ class Trainner:
 
     def __logInformation(self, pred1,  pred2, tensorOutput, mask, loss):
         self.trainLoss += loss.item()
-        self.preLabelsTrainGridAccuracy += self.__checkBatchGridAccuracy(pred1.view(-1,9)[mask], tensorOutput.view(-1)[mask])
         self.trainGridAccuracy += self.__checkBatchGridAccuracy(pred2.view(-1,9)[mask], tensorOutput.view(-1)[mask])
         self.batchCount+=1
         if self.batchCount % self.parameters.printEvery == 0:
-            logging.info('Epoch: {}, Batch: {}, Train Loss: {}, PreLabels Train Grid Accuracy: {}% Train Grid Accuracy: {}%'.format(self.epoch, self.batchIndex+1, self.trainLoss/self.batchCount, self.preLabelsTrainGridAccuracy*100/self.batchCount, self.trainGridAccuracy*100/self.batchCount))
+            logging.info('Epoch: {}, Batch: {}, Train Loss: {}, Train Grid Accuracy: {}%'.format(self.epoch, self.batchIndex+1, self.trainLoss/self.batchCount, self.trainGridAccuracy*100/self.batchCount))
             self.__initLoggingVariables()
 
     def __initLoggingVariables(self):
         self.trainLoss=0
-        self.preLabelsTrainGridAccuracy=0
         self.trainGridAccuracy=0
         self.batchCount=0
     
@@ -118,7 +116,6 @@ class Trainner:
 
     def __evaluate(self):
         self.model.eval()
-        preValidationGridAccuracy = 0.
         validationGridAccuracy = 0.
         
         with torch.no_grad():
@@ -126,11 +123,10 @@ class Trainner:
                 unsolvedSudokus, _ = self.__getIOTensorFromBatch(batch)
                 preSolvedSudokus, solvedSudokus = self.model(unsolvedSudokus)
                 mask = torch.where(unsolvedSudokus.view(-1)==0)
-                preValidationGridAccuracy += self.__checkBatchGridAccuracy(preSolvedSudokus.view(-1,9)[mask], batch[1].view(-1)[mask])
                 validationGridAccuracy += self.__checkBatchGridAccuracy(solvedSudokus.view(-1,9)[mask], batch[1].view(-1)[mask])
 
         self.__writeLastBatch(unsolvedSudokus, solvedSudokus, batch[1].squeeze())
-        logging.info('Pre-Validation Grid Accuracy: {}%, Validation Grid Accuracy: {}%'.format(preValidationGridAccuracy*100/(batchIndex+1) ,validationGridAccuracy*100/(batchIndex+1)))
+        logging.info('Validation Grid Accuracy: {}%'.format(validationGridAccuracy*100/(batchIndex+1)))
         self.model.train()
 
     def __saveModel(self):
