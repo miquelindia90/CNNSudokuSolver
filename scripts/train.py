@@ -65,17 +65,17 @@ class Trainner:
 
     def __logInformation(self, pred1,  pred2, tensorOutput, mask, loss):
         self.trainLoss += loss.item()
-        self.preLabelsTrainAccuracy += self.__checkBatchAccuracy(pred1.view(-1,9)[mask], tensorOutput.view(-1)[mask])
-        self.trainAccuracy += self.__checkBatchAccuracy(pred2.view(-1,9)[mask], tensorOutput.view(-1)[mask])
+        self.preLabelsTrainGridAccuracy += self.__checkBatchGridAccuracy(pred1.view(-1,9)[mask], tensorOutput.view(-1)[mask])
+        self.trainGridAccuracy += self.__checkBatchGridAccuracy(pred2.view(-1,9)[mask], tensorOutput.view(-1)[mask])
         self.batchCount+=1
         if self.batchCount % self.parameters.printEvery == 0:
-            logging.info('Epoch: {}, Batch: {}, Train Loss: {}, PreLabels Train Accuracy: {}% Train Accuracy: {}%'.format(self.epoch, self.batchIndex+1, self.trainLoss/self.batchCount, self.preLabelsTrainAccuracy*100/self.batchCount, self.trainAccuracy*100/self.batchCount))
+            logging.info('Epoch: {}, Batch: {}, Train Loss: {}, PreLabels Train Grid Accuracy: {}% Train Grid Accuracy: {}%'.format(self.epoch, self.batchIndex+1, self.trainLoss/self.batchCount, self.preLabelsTrainGridAccuracy*100/self.batchCount, self.trainGridAccuracy*100/self.batchCount))
             self.__initLoggingVariables()
 
     def __initLoggingVariables(self):
         self.trainLoss=0
-        self.preLabelsTrainAccuracy=0
-        self.trainAccuracy=0
+        self.preLabelsTrainGridAccuracy=0
+        self.trainGridAccuracy=0
         self.batchCount=0
     
     def __getIOTensorFromBatch(self, batch):
@@ -94,7 +94,7 @@ class Trainner:
         solvedSudokus[mask] = unsolvedSudokus[mask]
         return solvedSudokus.view(-1,9,9).tolist()
 
-    def __checkBatchAccuracy(self, pred, outputTensor):
+    def __checkBatchGridAccuracy(self, pred, outputTensor):
         pred = torch.argmax(pred, dim=-1) + 1        
         correctElements = (torch.sum(pred.cpu() == outputTensor.cpu())).item()
         return float(correctElements)/(pred.size(0))
@@ -118,18 +118,19 @@ class Trainner:
 
     def __evaluate(self):
         self.model.eval()
-        preValidationAccuracy = 0.
-        validationAccuracy = 0.
+        preValidationGridAccuracy = 0.
+        validationGridAccuracy = 0.
+        
         with torch.no_grad():
             for batchIndex, batch in enumerate(self.validDataLoader):
                 unsolvedSudokus, _ = self.__getIOTensorFromBatch(batch)
                 preSolvedSudokus, solvedSudokus = self.model(unsolvedSudokus)
                 mask = torch.where(unsolvedSudokus.view(-1)==0)
-                preValidationAccuracy += self.__checkBatchAccuracy(preSolvedSudokus.view(-1,9)[mask], batch[1].view(-1)[mask])
-                validationAccuracy += self.__checkBatchAccuracy(solvedSudokus.view(-1,9)[mask], batch[1].view(-1)[mask])
+                preValidationGridAccuracy += self.__checkBatchGridAccuracy(preSolvedSudokus.view(-1,9)[mask], batch[1].view(-1)[mask])
+                validationGridAccuracy += self.__checkBatchGridAccuracy(solvedSudokus.view(-1,9)[mask], batch[1].view(-1)[mask])
 
         self.__writeLastBatch(unsolvedSudokus, solvedSudokus, batch[1].squeeze())
-        logging.info('Pre-Validation Accuracy: {}%, Validation Accuracy: {}%'.format(preValidationAccuracy*100/(batchIndex+1) ,validationAccuracy*100/(batchIndex+1)))
+        logging.info('Pre-Validation Grid Accuracy: {}%, Validation Grid Accuracy: {}%'.format(preValidationGridAccuracy*100/(batchIndex+1) ,validationGridAccuracy*100/(batchIndex+1)))
         self.model.train()
 
     def __saveModel(self):
@@ -162,7 +163,7 @@ if __name__ == '__main__':
     parser.add_argument('--CSVDataPath', type=str, default='data/sudoku.csv')
     parser.add_argument('--outputSamplesDirectory', type=str, default='./out2')
     parser.add_argument('--logFile', type=str, default='./out2/train.log')
-    parser.add_argument('--dataSamples', type=int, default=1000000, help='Number Of Samples Used from the CSV') 
+    parser.add_argument('--dataSamples', type=int, default=10000, help='Number Of Samples Used from the CSV') 
     parser.add_argument('--dropSamplingStrategy', action='store_true')
 
     parser.add_argument('--numberOfKernels', type=int, default=32)
@@ -170,7 +171,7 @@ if __name__ == '__main__':
     parser.add_argument('--learningRate', type=float, default=0.0001)
     
     parser.add_argument('--seed', type=int, default=1234) 
-    parser.add_argument('--printEvery', type=int, default=1000, help='Trainning Logging Frequency in # of batches') 
+    parser.add_argument('--printEvery', type=int, default=10, help='Trainning Logging Frequency in # of batches') 
     parameters = parser.parse_args() 
     trainner = Trainner(parameters)
     trainner.train()
